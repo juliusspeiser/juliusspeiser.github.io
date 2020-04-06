@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>The DECRYPT0N4T0R</title>
+  <style type="text/css">
+    body,
+    textarea {
+      background-color: black;
+      color: green;
+      font-size: 16px;
+      font-family: monospace;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px
+    }
+
+    #decoded {
+      white-space: pre-line;
+    }
+
+    #error {
+      background-color: red;
+      color: white;
+    }
+
+    input[type='checkbox'] {
+      display: none;
+    }
+
+    .lbl-toggle {
+      display: block;
+      cursor: pointer;
+      transition: all 0.25s ease-out;
+    }
+
+    .lbl-toggle::before {
+      content: ' ';
+      display: inline-block;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 5px solid currentColor;
+      vertical-align: middle;
+      margin-right: .7rem;
+      transform: translateY(-2px);
+      transition: transform .2s ease-out;
+    }
+
+    .lbl-toggle>p {
+      padding-left: 16px;
+      margin-bottom: 0px;
+    }
+
+    .toggle:checked+.lbl-toggle::before {
+      transform: rotate(90deg) translateX(-3px);
+    }
+
+    .collapsible-content {
+      max-height: 0px;
+      overflow: hidden;
+      transition: max-height .25s ease-in-out;
+    }
+
+    .toggle:checked+.lbl-toggle+.collapsible-content {
+      max-height: 550px;
+    }
+
+    .toggle:checked+.lbl-toggle {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .content-inner {
+      padding-left: 20px;
+    }
+
+    .prog-content {
+      padding-left: 40px;
+    }
+
+    .lbl-toggle-highlight {
+      margin-left: 20px;
+      padding-left: 0px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>The DECRYPT0N4T0R</h1>
+  <h3>Encrypted message:</h3>
+  <textarea id="encrypted">Ancrobzau zaxz...</textarea>
+  <h3>Decryption key:</h3>
+  <div id="error"></div>
+  <div class="mytable wrap-collabsible">
+    <input id="collapsible3" class="toggle" type="checkbox">
+    <label for="collapsible3" class="lbl-toggle">Hint...</label>
+    <div class="collapsible-content">
+      <div class="content-inner">
+        <p>Try copying the following lines into the text box below</p>
+        <p>a->e<br>e->a<br>o->y<br>b->p<br>z->t<br>u->d</p>
+      </div>
+    </div>
+  </div>
+  <textarea id="code"></textarea>
+  <h3>Decryption hints:</h3>
+  <div class="mytable wrap-collabsible">
+    <input id="collapsible2" class="toggle" type="checkbox">
+    <label for="collapsible2" class="lbl-toggle">Most common words in encrypted text</label>
+    <div class="collapsible-content">
+      <div class="content-inner">
+        <p id="common-words"></p>
+      </div>
+    </div>
+  </div>
+  <div class="mytable wrap-collabsible">
+    <input id="collapsible4" class="toggle" type="checkbox">
+    <label for="collapsible4" class="lbl-toggle">Most common words in English</label>
+    <div class="collapsible-content">
+      <div class="content-inner">
+        <p>the, be, to, of, and, a, in, that, have, I, it, for, not, on, with, he, as, you, do, at, this, but, his, by, from, they, we, say, her, she, or, an, will, my, one, all, would, there, their, what, so, up, out, if, about, who, get, which, go, me, when, make, can, like, time, no, just, him, know, take, people, into, year, your, good, some, could, them, see, other, than, then, now, look, only, come, its, over, think, also, back, after, use, two, how, our, work, first, well, way, even, new, want, because, any, these, give, day, most, us</p>
+      </div>
+    </div>
+  </div>
+  <h3>Decoded message:</h3>
+  <p id="decoded"></p>
+  <script type="text/javascript">
+    function charMap() {
+      var map_aux = document.getElementById("code").value.split("\n").map(x => x.split("->").map(x => x.trim()));
+      var map = {};
+      var mapOp = {};
+
+      document.getElementById('error').innerHTML = "";
+      for (let i = 0; i < map_aux.length; i++) {
+        if (map_aux[i].length === 2 &&
+          map_aux[i][0].length === map_aux[i][1].length) {
+          for (let j = 0; j < map_aux[i][0].length; j++) {
+            if (map_aux[i][0].charAt(j) in map && map[map_aux[i][0].charAt(j)] !== map_aux[i][1].charAt(j)) {
+              document.getElementById('error').innerHTML =
+                "Error: '" + map_aux[i][0].charAt(j) + "' is mapped to both '" + map[map_aux[i][0].charAt(j)] + "' and '" + map_aux[i][1].charAt(j) + "'!";
+            }
+            if (map_aux[i][1].charAt(j) in mapOp && mapOp[map_aux[i][1].charAt(j)] !== map_aux[i][0].charAt(j)) {
+              document.getElementById('error').innerHTML =
+                "Error: '" + map_aux[i][0].charAt(j) + "' and '" + mapOp[map_aux[i][1].charAt(j)] + "' are both mapped to '" + map_aux[i][1].charAt(j) + "'!";
+            }
+            mapOp[map_aux[i][1].charAt(j)] = map_aux[i][0].charAt(j);
+            map[map_aux[i][0].charAt(j)] = map_aux[i][1].charAt(j);
+          }
+        }
+      }
+      return map;
+    }
+
+    function decode_message() {
+      var code_map = charMap();
+      var encoded_message = document.getElementById("encrypted").value;
+      var decoded_message = decode(encoded_message, code_map);
+      var decodedP = document.getElementById('decoded');
+      decodedP.innerHTML = decoded_message;
+
+      common_words();
+    }
+
+    function decode(m, code_map) {
+      var decoded_message = "";
+      for (const c of m.toLowerCase()) {
+        if (c in code_map) decoded_message += code_map[c].toUpperCase();
+        else decoded_message += c;
+      }
+      return decoded_message;
+    }
+
+    function common_words() {
+      var code_map = charMap();
+      var encoded_message = document.getElementById("encrypted").value;
+      var common_map = {}
+      encoded_message.toLowerCase().split(" ").forEach(w => {
+        if (w in common_map) common_map[w] += 1
+        else common_map[w] = 1
+      });
+
+      var items = Object.keys(common_map).map(function(key) {
+        return [key, common_map[key]];
+      });
+
+      items.sort(function(first, second) {
+        return second[1] - first[1];
+      });
+      document.getElementById('common-words').innerHTML = items.map(x => "'" + decode(x[0], code_map) + "'").join(', ');
+    }
+
+    document.getElementById("code").addEventListener("keyup", decode_message);
+    document.getElementById("encrypted").addEventListener("keyup", decode_message);
+  </script>
+</body>
+
+</html>
